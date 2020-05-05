@@ -14,6 +14,7 @@
 
 #ifdef USES_P075
 #include <ESPeasySerial.h>
+#include "_Plugin_Helper.h"
 
 // *****************************************************************************************************
 // Defines start here
@@ -106,7 +107,7 @@ boolean Plugin_075(byte function, struct EventStruct *event, String& string)
 
     case PLUGIN_DEVICE_ADD: {
       Device[++deviceCount].Number = PLUGIN_ID_075;
-      Device[deviceCount].Type = DEVICE_TYPE_DUAL;
+      Device[deviceCount].Type = DEVICE_TYPE_SERIAL;
       Device[deviceCount].VType = SENSOR_TYPE_DUAL;
       Device[deviceCount].Ports = 0;
       Device[deviceCount].PullUpOption = false;         // Pullup is not used.

@@ -40,6 +40,7 @@
 #define PLUGIN_049_FILTER_SLOW       5
 
 #include <ESPeasySerial.h>
+#include "_Plugin_Helper.h"
 
 enum MHZ19Types {
   MHZ19_notDetected,
@@ -360,7 +361,7 @@ boolean Plugin_049(byte function, struct EventStruct *event, String& string)
     case PLUGIN_DEVICE_ADD:
       {
         Device[++deviceCount].Number = PLUGIN_ID_049;
-        Device[deviceCount].Type = DEVICE_TYPE_DUAL;
+        Device[deviceCount].Type = DEVICE_TYPE_SERIAL;
         Device[deviceCount].VType = SENSOR_TYPE_TRIPLE;
         Device[deviceCount].Ports = 0;
         Device[deviceCount].PullUpOption = false;

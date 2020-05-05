@@ -10,45 +10,46 @@
 /*********************************************************************************************\
  * SettingsStruct
 \*********************************************************************************************/
-template <unsigned int N_TASKS>
+template<unsigned int N_TASKS>
 class SettingsStruct_tmpl
 {
   public:
+
   SettingsStruct_tmpl();
 
   // VariousBits1 defaults to 0, keep in mind when adding bit lookups.
-  bool appendUnitToHostname();
+  bool appendUnitToHostname() const;
   void appendUnitToHostname(bool value);
 
-  bool uniqueMQTTclientIdReconnect();
-  void uniqueMQTTclientIdReconnect(bool value);
+  bool uniqueMQTTclientIdReconnect_unused() const;
+  void uniqueMQTTclientIdReconnect_unused(bool value);
 
-  bool OldRulesEngine();
+  bool OldRulesEngine() const;
   void OldRulesEngine(bool value);
 
-  bool ForceWiFi_bg_mode();
+  bool ForceWiFi_bg_mode() const;
   void ForceWiFi_bg_mode(bool value);
 
-  bool WiFiRestart_connection_lost();
+  bool WiFiRestart_connection_lost() const;
   void WiFiRestart_connection_lost(bool value);
 
-  bool EcoPowerMode();
+  bool EcoPowerMode() const;
   void EcoPowerMode(bool value);
 
-  bool WifiNoneSleep();
+  bool WifiNoneSleep() const;
   void WifiNoneSleep(bool value);
 
   // Enable send gratuitous ARP by default, so invert the values (default = 0)
-  bool gratuitousARP();
+  bool gratuitousARP() const;
   void gratuitousARP(bool value);
 
   // Be a bit more tolerant when parsing the last argument of a command.
   // See: https://github.com/letscontrolit/ESPEasy/issues/2724
-  bool TolerantLastArgParse();
+  bool TolerantLastArgParse() const;
   void TolerantLastArgParse(bool value);
 
   // SendToHttp command does not wait for ack, with this flag it does wait.
-  bool SendToHttp_ack();
+  bool SendToHttp_ack() const;
   void SendToHttp_ack(bool value);
 
   void validate();
@@ -75,6 +76,12 @@ class SettingsStruct_tmpl
 
   void clearTask(taskIndex_t task);
 
+  // Return hostname + unit when selected to add unit.
+  String getHostname() const;
+
+  // Return hostname with explicit set append unit.
+  String getHostname(bool appendUnit) const;
+
   unsigned long PID;
   int           Version;
   int16_t       Build;
@@ -100,7 +107,7 @@ class SettingsStruct_tmpl
   byte          WebLogLevel;
   byte          SDLogLevel;
   unsigned long BaudRate;
-  unsigned long MessageDelay;
+  unsigned long MessageDelay_unused;  // MQTT settings now moved to the controller settings.
   byte          deepSleep_wakeTime;   // 0 = Sleep Disabled, else time awake from sleep in seconds
   boolean       CustomCSS;
   boolean       DST;
@@ -113,7 +120,7 @@ class SettingsStruct_tmpl
   boolean       GlobalSync;
   unsigned long ConnectionFailuresThreshold;
   int16_t       TimeZone;
-  boolean       MQTTRetainFlag;
+  boolean       MQTTRetainFlag_unused;
   boolean       InitSPI;
   // FIXME TD-er: Must change to cpluginID_t, but then also another check must be added since changing the pluginID_t will also render settings incompatible
   byte          Protocol[CONTROLLER_MAX];
@@ -154,7 +161,7 @@ class SettingsStruct_tmpl
   int8_t        Pin_Reset;
   byte          SyslogFacility;
   uint32_t      StructSize;  // Forced to be 32 bit, to make sure alignment is clear.
-  boolean       MQTTUseUnitNameAsClientId;
+  boolean       MQTTUseUnitNameAsClientId_unused;
 
   //its safe to extend this struct, up to several bytes, default values in config are 0
   //look in misc.ino how config.dat is used because also other stuff is stored in it at different offsets.
@@ -163,6 +170,7 @@ class SettingsStruct_tmpl
   float         Longitude;
   uint32_t      VariousBits1;
   uint32_t      ResetFactoryDefaultPreference; // Do not clear this one in the clearAll()
+  uint32_t      I2C_clockSpeed;
 
   // FIXME @TD-er: As discussed in #1292, the CRC for the settings is now disabled.
   // make sure crc is the last value in the struct

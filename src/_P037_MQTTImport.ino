@@ -3,6 +3,7 @@
 //#################################### Plugin 037: MQTT Import ##########################################
 //#######################################################################################################
 
+
 // Original plugin created by Namirda
 
 // This task reads data from the MQTT Import input stream and saves the value
@@ -10,6 +11,7 @@
 #include "src/Globals/MQTT.h"
 #include "src/Globals/CPlugins.h"
 #include "src/Globals/Plugins.h"
+#include "_Plugin_Helper.h"
 
 #define PLUGIN_037
 #define PLUGIN_ID_037         37
@@ -435,8 +437,10 @@ boolean MQTTConnect_037()
   {
     String log = "";
 
-    if ((SecuritySettings.ControllerUser[enabledMqttController][0] != 0) && (SecuritySettings.ControllerPassword[enabledMqttController][0] != 0))
-      result = MQTTclient_037->connect(clientid.c_str(), SecuritySettings.ControllerUser[enabledMqttController], SecuritySettings.ControllerPassword[enabledMqttController]);
+    if (hasControllerCredentialsSet(enabledMqttController, ControllerSettings))
+      result = MQTTclient_037->connect(clientid.c_str(), 
+                                      getControllerUser(enabledMqttController, ControllerSettings).c_str(), 
+                                      getControllerPass(enabledMqttController, ControllerSettings).c_str());
     else
       result = MQTTclient_037->connect(clientid.c_str());
 

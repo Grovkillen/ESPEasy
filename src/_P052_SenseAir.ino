@@ -95,6 +95,7 @@
 #define P052_MODBUS_TIMEOUT  180       // 100 msec communication timeout.
 
 #include <ESPeasySerial.h>
+#include "_Plugin_Helper.h"
 
 
 struct P052_data_struct : public PluginTaskData_base {
@@ -117,7 +118,6 @@ struct P052_data_struct : public PluginTaskData_base {
   }
 
   ModbusRTU_struct modbus;
-  byte             sensortype;
 };
 
 unsigned int _plugin_052_last_measurement = 0;
@@ -145,7 +145,7 @@ boolean Plugin_052(byte function, struct EventStruct *event, String& string) {
   switch (function) {
     case PLUGIN_DEVICE_ADD: {
       Device[++deviceCount].Number           = PLUGIN_ID_052;
-      Device[deviceCount].Type               = DEVICE_TYPE_DUAL;
+      Device[deviceCount].Type               = DEVICE_TYPE_SERIAL;
       Device[deviceCount].VType              = SENSOR_TYPE_SINGLE;
       Device[deviceCount].Ports              = 0;
       Device[deviceCount].PullUpOption       = false;

@@ -11,6 +11,7 @@
 
 
 #include <ESPeasySerial.h>
+#include "_Plugin_Helper.h"
 
 #define PLUGIN_053
 #define PLUGIN_ID_053 53
@@ -161,7 +162,7 @@ boolean Plugin_053(byte function, struct EventStruct *event, String& string)
     case PLUGIN_DEVICE_ADD:
       {
         Device[++deviceCount].Number = PLUGIN_ID_053;
-        Device[deviceCount].Type = DEVICE_TYPE_TRIPLE;
+        Device[deviceCount].Type = DEVICE_TYPE_SERIAL_PLUS1;
         Device[deviceCount].VType = SENSOR_TYPE_TRIPLE;
         Device[deviceCount].Ports = 0;
         Device[deviceCount].PullUpOption = false;

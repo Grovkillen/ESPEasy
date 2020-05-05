@@ -212,6 +212,7 @@ String rulesProcessingFile(const String& fileName, String& event) {
         {
           // Line end, parse rule
           line.trim();
+          check_rules_line_user_errors(line);
           const size_t lineLength = line.length();
 
           if (lineLength > longestLineSize) {
@@ -284,6 +285,66 @@ String rulesProcessingFile(const String& fileName, String& event) {
   nestingLevel--;
   checkRAM(F("rulesProcessingFile2"));
   return "";
+}
+
+
+/********************************************************************************************\
+   Strip comment from the line.
+   Return true when comment was stripped.
+ \*********************************************************************************************/
+bool rules_strip_trailing_comments(String& line)
+{
+   // Strip trailing comments
+  int comment = line.indexOf(F("//"));
+
+  if (comment >= 0) {
+    line = line.substring(0, comment);
+    line.trim();
+    return true;
+  }
+  return false; 
+}
+
+/********************************************************************************************\
+   Test for common mistake
+   Return true if mistake was found (and corrected)
+ \*********************************************************************************************/
+bool rules_replace_common_mistakes(const String& from, const String& to, String& line)
+{
+  if (line.indexOf(from) == -1) {
+    return false; // Nothing replaced
+  }
+  if (loglevelActiveFor(LOG_LEVEL_ERROR)) {
+    String log;
+    log.reserve(32 + from.length() + to.length() + line.length());
+    log = F("Rules (Syntax Error, auto-corrected): '");
+    log += from;
+    log += F("' => '");
+    log += to;
+    log += F("' in: '");
+    log += line;
+    log += '\'';
+    addLog(LOG_LEVEL_ERROR, log);
+  }
+  line.replace(from, to);
+  return true;
+}
+
+/********************************************************************************************\
+   Check for common mistakes
+   Return true if nothing strange found
+ \*********************************************************************************************/
+bool check_rules_line_user_errors(String& line)
+{
+  bool res = true;
+  if (rules_replace_common_mistakes(F("if["), F("if ["), line)) {
+    res = false;
+  }
+  if (rules_replace_common_mistakes(F("if%"), F("if %"), line)) {
+    res = false;
+  }
+
+  return res;
 }
 
 
@@ -389,8 +450,18 @@ void parse_string_commands(String &line) {
         uint8_t uval = arg1.c_str()[0];
         replacement = String(uval);
       }
+      if (replacement.length() == 0) {
+        // part in braces is not a supported command.
+        // replace the {} with other characters to mask the braces so we can continue parsing.
+        // We have to unmask then after we're finished.
+        // See: https://github.com/letscontrolit/ESPEasy/issues/2932#issuecomment-596139096
+        replacement = line.substring(startIndex, closingIndex + 1);
+        replacement.replace('{', static_cast<char>(0x02));
+        replacement.replace('}', static_cast<char>(0x03));
+      }
       // Replace the full command including opening and closing brackets.
       line.replace(line.substring(startIndex, closingIndex + 1), replacement);
+
       /*
       if (replacement.length() > 0) {
         addLog(LOG_LEVEL_INFO, String(F("parse_string_commands cmd: ")) + fullCommand + String(F(" -> ")) + replacement);
@@ -398,6 +469,10 @@ void parse_string_commands(String &line) {
       */
     }
   }
+  // We now have to check if we did mask some parts and unmask them.
+  // Let's hope we don't mess up any Unicode here.
+  line.replace(static_cast<char>(0x02), '{');
+  line.replace(static_cast<char>(0x03), '}');
 }
 
 
@@ -465,13 +540,7 @@ void parseCompleteNonCommentLine(String& line, String& event, String& log,
 
   isCommand = true;
 
-  // Strip trailing comments
-  int comment = line.indexOf(F("//"));
-
-  if (comment >= 0) {
-    line = line.substring(0, comment);
-  }
-  line.trim();
+  rules_strip_trailing_comments(line);
 
   if (match || !codeBlock) {
     // only parse [xxx#yyy] if we have a matching ruleblock or need to eval the
@@ -607,7 +676,8 @@ void processMatchedRule(String& action, String& event,
       }
     }
   } else {
-    split = lcAction.indexOf(F("if ")); // check for optional "if" condition
+     // check for optional "if" condition
+    split = lcAction.indexOf(F("if "));
 
     if (split != -1) {
       if (ifBlock < RULES_IF_MAX_NESTING_LEVEL) {
@@ -638,7 +708,7 @@ void processMatchedRule(String& action, String& event,
         if (loglevelActiveFor(LOG_LEVEL_ERROR)) {
           log  = F("Lev.");
           log += String(ifBlock);
-          log  = F(": Error: IF Nesting level exceeded!");
+          log += F(": Error: IF Nesting level exceeded!");
           addLog(LOG_LEVEL_ERROR, log);
         }
       }
@@ -819,7 +889,7 @@ bool conditionMatchExtended(String& check) {
     condOr  = check.indexOf(F(" or "));
 
     if ((condAnd > 0) || (condOr > 0)) {                             // we got AND/OR
-      if ((condAnd > 0) && (((condOr < 0) && (condOr < condAnd)) ||
+      if ((condAnd > 0) && (((condOr < 0) /*&& (condOr < condAnd)*/) ||
                             ((condOr > 0) && (condOr > condAnd)))) { // AND is first
         check     = check.substring(condAnd + 5);
         rightcond = conditionMatch(check);

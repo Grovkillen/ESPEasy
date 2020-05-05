@@ -2,6 +2,9 @@
 //#######################################################################################################
 //#################################### Plugin 043: Clock Output #########################################
 //#######################################################################################################
+
+#include "_Plugin_Helper.h"
+
 #define PLUGIN_043
 #define PLUGIN_ID_043         43
 #define PLUGIN_NAME_043       "Output - Clock"
@@ -67,7 +70,7 @@ boolean Plugin_043(byte function, struct EventStruct *event, String& string)
 
           addHtml(" ");
           byte choice = ExtraTaskSettings.TaskDevicePluginConfig[x];
-          addSelector(String(F("p043_state")) + (x), 3, options, NULL, NULL, choice, false);
+          addSelector(String(F("p043_state")) + (x), 3, options, NULL, NULL, choice);
         }
         success = true;
         break;
